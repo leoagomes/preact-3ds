@@ -1,17 +1,21 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Windows",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/include/**",
-                "${workspaceFolder}/libs/**",
-                "/opt/devkitpro/portlibs/3ds/include",
-                "/opt/devkitpro/devkitARM/arm-none-eabi/include",
-                "/opt/devkitpro/libctru/include"
+                "C:\\devkitPro\\libctru\\include",
+                "C:\\devkitPro\\portlibs\\3ds\\include",
+                "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include",
+                "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\c++\\9.1.0"
             ],
-            "defines": [],
-            "compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-g++",
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.17763.0",
+            "compilerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-c++.exe",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x64"
