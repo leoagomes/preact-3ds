@@ -1,15 +1,5 @@
 #include "js/api/console.hpp"
 
-void js::api::register_console(duk_context* context) {
-    const duk_function_list_entry functions[] = {
-        { "log", console_log, DUK_VARARGS }
-    };
-
-    duk_push_object(context);
-    duk_put_function_list(context, -1, functions);
-    duk_put_global_string(context, "console");
-}
-
 int console_log(duk_context* context) {
     int argument_count = duk_get_top(context);
 
@@ -20,4 +10,14 @@ int console_log(duk_context* context) {
     putchar('\n');
 
     return 0;
+}
+
+void js::api::register_console(duk_context* context) {
+    const duk_function_list_entry functions[] = {
+        { "log", console_log, DUK_VARARGS }
+    };
+
+    duk_push_object(context);
+    duk_put_function_list(context, -1, functions);
+    duk_put_global_string(context, "console");
 }

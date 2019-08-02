@@ -33,7 +33,7 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	out/$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source libs/duktape libs/yoga
+SOURCES		:=	source source/js source/events source/js/api source/js/duktape libs/duktape libs/yoga
 DATA		:=	data
 INCLUDES	:=	include libs/duktape libs/yoga
 GRAPHICS	:=	gfx

@@ -2,10 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <3ds.h>
+#include <3ds/os.h>
 #include <time.h>
 #include <sys/time.h>
 
+#include <iostream>
+
 #include "duktape.h"
+
+#include "js/duktape/extensions.hpp"
+#include "js/duktape/files.hpp"
+#include "js/api/console.hpp"
+
+#include "events.hpp";
+
+#include "helpers.hpp"
 
 void initialize();
 void terminate();
@@ -30,17 +41,24 @@ void threadMain(void* arg) {
 	}
 }
 
+duk_ret_t fun(duk_context* context) {
+	duk_stack_to_array(context, 0);
+	return 1;
+}
+
 int main(int argc, char* argv[]) {
 	initialize();
 
-	printf("Creating timer...");
-	svcCreateTimer(&threadTimer, RESET_ONESHOT);
-	svcSetTimer(threadTimer, 0, 1000000000);
-	printf(" OK!\n");
+	// printf("Creating timer...");
+	// svcCreateTimer(&threadTimer, RESET_ONESHOT);
+	// svcSetTimer(threadTimer, 0, 1000000000);
+	// printf(" OK!\n");
 
-	printf("Starting thread...");
-	threadHandle = threadCreate(threadMain, nullptr, 4 * 1024, 0x18, -2, true);
-	printf(" OK!\n");
+	// printf("Starting thread...");
+	// threadHandle = threadCreate(threadMain, nullptr, 4 * 1024, 0x18, -2, true);
+	// printf(" OK!\n");
+
+	events::loop loop;
 
 	while (aptMainLoop())
 	{
@@ -51,6 +69,8 @@ int main(int argc, char* argv[]) {
 		u32 kDown = hidKeysDown();
 		if (kDown & KEY_START)
 			break;
+
+		loop.cycle();
 	}
 
 	terminate();
