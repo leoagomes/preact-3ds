@@ -23,8 +23,7 @@ public:
         u64 interval,
         timer_callback_t callback,
         void* userdata
-    ) : one_shot(one_shot), interval(interval),
-        next_activation(next_activation), callback(callback),
+    ) : interval(interval), one_shot(one_shot), callback(callback),
         userdata(userdata) {}
     ~timer() {}
 

@@ -31,11 +31,22 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
+SOURCES		:=	source \
+	source/js \
+	source/events \
+	source/js/api \
+	source/js/duktape \
+	libs/duktape \
+	libs/yoga
+
+INCLUDES	:=	include \
+	libs/duktape \
+	libs/yoga \
+	libs/simdb
+
 TARGET		:=	out/$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/js source/events source/js/api source/js/duktape libs/duktape libs/yoga
 DATA		:=	data
-INCLUDES	:=	include libs/duktape libs/yoga
 GRAPHICS	:=	gfx
 GFXBUILD	:=	$(BUILD)
 ROMFS		:=	romfs

@@ -13,77 +13,62 @@
 #include "js/duktape/extensions.hpp"
 #include "js/duktape/files.hpp"
 #include "js/api/console.hpp"
+#include "js/api/event_loop.hpp"
 
-#include "events.hpp";
+#include "events.hpp"
 
 #include "helpers.hpp"
 
 void initialize();
 void terminate();
 
-bool runThread = true;
-Handle threadTimer;
-Thread threadHandle;
-
-void threadMain(void* arg) {
-	while (runThread) {
-		Result res = svcWaitSynchronization(threadTimer, U64_MAX);
-		svcClearTimer(threadTimer);
-
-		auto tick = svcGetSystemTick();
-
-		timeval t;
-		if (0 == gettimeofday(&t, nullptr)) {
-			printf("microsecs: %ld; secs: %lld\n", t.tv_usec, t.tv_sec);
-		}
-
-		printf("Timer! %lld %llx\n", tick, tick);
-	}
-}
-
-duk_ret_t fun(duk_context* context) {
-	duk_stack_to_array(context, 0);
-	return 1;
-}
-
 int main(int argc, char* argv[]) {
-	initialize();
+    initialize();
 
-	// printf("Creating timer...");
-	// svcCreateTimer(&threadTimer, RESET_ONESHOT);
-	// svcSetTimer(threadTimer, 0, 1000000000);
-	// printf(" OK!\n");
+    duk_context* context;
+    events::loop* loop = new events::loop();
 
-	// printf("Starting thread...");
-	// threadHandle = threadCreate(threadMain, nullptr, 4 * 1024, 0x18, -2, true);
-	// printf(" OK!\n");
+    context = duk_create_heap_default();
+    if (context == nullptr) {
+        printf("error with duktape\n");
+        return 0;
+    }
 
-	events::loop loop;
+    js::api::register_console(context);
+    js::api::register_event_loop(context, loop);
 
-	while (aptMainLoop())
-	{
-		gspWaitForVBlank();
-		gfxSwapBuffers();
-		hidScanInput();
+    auto eval_result = duk_peval_file(context, "romfs:/index.js");
+    if (eval_result == DUK_EXEC_ERROR) {
+        printf("error running script: %s\n", duk_to_string(context, -1));
+    }
+    duk_pop(context);
 
-		u32 kDown = hidKeysDown();
-		if (kDown & KEY_START)
-			break;
+    while (aptMainLoop())
+    {
+        gspWaitForVBlank();
+        gfxSwapBuffers();
+        hidScanInput();
 
-		loop.cycle();
-	}
+        u32 kDown = hidKeysDown();
+        if (kDown & KEY_START)
+            break;
 
-	terminate();
-	return 0;
+        loop->cycle();
+    }
+
+    delete loop;
+
+    terminate();
+    return 0;
 }
 
 void initialize() {
-	gfxInitDefault();
-	consoleInit(GFX_TOP, NULL);
-	romfsInit();
+    gfxInitDefault();
+    consoleInit(GFX_TOP, NULL);
+    romfsInit();
 }
 
 void terminate() {
-	romfsExit();
-	gfxExit();
+    romfsExit();
+    gfxExit();
 }
