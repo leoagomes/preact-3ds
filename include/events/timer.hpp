@@ -28,7 +28,6 @@ public:
     ~timer() {}
 
     u64 get_id() { return id; }
-    // DO NOT USE THIS FUNCTION
     void set_id(u64 id) { this->id = id; }
 
     u64 get_interval() { return interval; }
