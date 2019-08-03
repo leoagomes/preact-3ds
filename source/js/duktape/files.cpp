@@ -16,7 +16,10 @@ duk_int_t duk_pcompile_file(duk_context* context, duk_int_t flags, const char* f
 duk_int_t duk_peval_file(duk_context* context, const char* filename) {
     auto compilation_result = duk_pcompile_file(context, 0, filename);
 
-    if (compilation_result != 0) return compilation_result;
+    if (compilation_result == DUK_EXEC_ERROR)
+        return compilation_result;
 
-    return duk_pcall(context, 0);
+    auto result = duk_pcall(context, 0);
+
+    return result;
 }

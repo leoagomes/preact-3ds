@@ -4,7 +4,7 @@
 
 namespace events {
 
-loop::loop() : _timer_id(0), timers() {
+loop::loop() : _timer_id(1), timers() {
 }
 
 loop::~loop() {}
@@ -30,11 +30,9 @@ void loop::add_timer(std::shared_ptr<timer> timer) {
     timers.push_back(timer);
     push_timer_heap();
 }
-std::shared_ptr<timer> loop::pop_timer() {
+void loop::pop_timer() {
     pop_timer_heap();
-    auto timer = timers.back();
     timers.pop_back();
-    return timer;
 }
 void loop::reposition_top_timer() {
     pop_timer_heap();
@@ -57,10 +55,9 @@ bool loop::clear_timer(u64 id) {
         auto timer = *it;
 
         if (timer->get_id() == id) {
-            std::iter_swap(it, std::prev(timers.end()));
-            timers.pop_back();
+            timers.erase(it);
             make_timer_heap();
-            break;
+            return true;
         }
     }
 
@@ -68,12 +65,12 @@ bool loop::clear_timer(u64 id) {
 }
 
 void loop::run_due_timers() {
-    if (timers.empty()) return;
+    std::shared_ptr<timer> timer;
 
-    auto timer = timers.front();
-
-    while (timer != nullptr
+    while (!timers.empty()
+        && (timer = timers.front()) != nullptr
         && timer->get_next_activation() < now) {
+
         timer->execute();
 
         if (timer->is_one_shot()) {
@@ -83,8 +80,6 @@ void loop::run_due_timers() {
             timer->set_next_activation(next_activation);
             reposition_top_timer();
         }
-
-        timer = timers.front();
     }
 }
 

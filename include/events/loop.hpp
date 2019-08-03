@@ -24,7 +24,7 @@ private:
     void pop_timer_heap();
     void make_timer_heap();
     void add_timer(std::shared_ptr<timer> timer);
-    std::shared_ptr<timer> pop_timer();
+    void pop_timer();
     void reposition_top_timer();
 
     void run_due_timers();
