@@ -22,7 +22,7 @@ public:
         bool one_shot,
         u64 interval,
         timer_callback_t callback,
-        void* userdata
+        void* userdata = nullptr
     ) : interval(interval), one_shot(one_shot), callback(callback),
         userdata(userdata) {}
     ~timer() {}
