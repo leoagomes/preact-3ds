@@ -34,14 +34,52 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    js::api::register_console(context);
-    js::api::register_event_loop(context, loop);
+    // js::api::register_console(context);
+    // js::api::register_event_loop(context, loop);
 
-    auto eval_result = duk_peval_file(context, "romfs:/index.js");
-    if (eval_result == DUK_EXEC_ERROR) {
-        printf("error running script: %s\n", duk_to_string(context, -1));
+    // auto eval_result = duk_peval_file(context, "romfs:/index.js");
+    // if (eval_result == DUK_EXEC_ERROR) {
+    //     printf("error running script: %s\n", duk_to_string(context, -1));
+    // }
+    // duk_pop(context);
+
+    auto req = std::make_shared<events::http::http>();
+    req->on_abort = [] (events::http::http& context) {
+        printf("request aborted.\n");
+    };
+    req->on_failure = [] (events::http::http& context, events::http::point_of_failure point) {
+        printf("request failed: %d\n", static_cast<int>(point));
+    };
+    req->on_state_changed = [] (events::http::http& context, events::http::request_state state) {
+        printf("request state changed... current state: %d\n", static_cast<int>(state));
+    };
+    req->on_timeout = [] (events::http::http& context) {
+        printf("request timed out.\n");
+    };
+    if (req->open(events::http::method::get, "http://httpstat.us/200")) {
+        printf("failed opening request.\n");
     }
-    duk_pop(context);
+    if (req->begin()) {
+        printf("error beginning request.\n");
+    }
+    loop->register_request(req);
+
+    loop->register_timer(std::make_shared<events::timer>(
+        true,
+        10000,
+        [req] (u64 id, void* ud) {
+            printf("aborting request.\n");
+            req->abort();
+        }
+    ));
+
+    // if left to out of scope destruction, httpcContextClose will be called
+    // _after_ httpcExit(). This causes memory corruption and the OS crashes.
+    // setting req to null releases the ownership of the request pointer
+    // before running httpcExit
+    req = nullptr;
+
+    printf("entering loop...\n");
 
     while (aptMainLoop())
     {
@@ -66,9 +104,11 @@ void initialize() {
     gfxInitDefault();
     consoleInit(GFX_TOP, NULL);
     romfsInit();
+    httpcInit(0x2000);
 }
 
 void terminate() {
+    httpcExit();
     romfsExit();
     gfxExit();
 }
