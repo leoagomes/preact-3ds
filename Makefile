@@ -37,12 +37,13 @@ SOURCES		:=	source \
 	source/js/api \
 	source/js/duktape \
 	libs/duktape \
-	libs/yoga
+	libs/yoga \
+	libs/litehtml/src/gumbo
 
 INCLUDES	:=	include \
 	libs/duktape \
 	libs/yoga \
-	libs/simdb
+	libs/litehtml/src/gumbo
 
 TARGET		:=	out/$(notdir $(CURDIR))
 BUILD		:=	build
@@ -128,13 +129,15 @@ export T3XHFILES		:=	$(patsubst %.t3s, $(BUILD)/%.h, $(GFXFILES))
 endif
 #---------------------------------------------------------------------------------
 
+OFILES_LIBS := libhtml.o duktape.o yoga.o
+
 export OFILES_SOURCES 	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 
 export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES)) \
 			$(PICAFILES:.v.pica=.shbin.o) $(SHLISTFILES:.shlist=.shbin.o) \
 			$(addsuffix .o,$(T3XFILES))
 
-export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
+export OFILES := $(OFILES_BIN) $(OFILES_SOURCES) $(OFILE_LIBS)
 
 export HFILES	:=	$(PICAFILES:.v.pica=_shbin.h) $(SHLISTFILES:.shlist=_shbin.h) \
 			$(addsuffix .h,$(subst .,_,$(BINFILES))) \
@@ -264,3 +267,22 @@ endef
 #---------------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------------
+
+# --- liteHTML ---
+LITEHTML_DIR = libs/litehtml
+LITEHTML_SRCDIR = $(LITEHTML_DIR)/src
+LITEHTML_FILES = $(wildcard $(LITEHTML_SRCDIR)/*.*)
+LITEHTML_CPPFILES = $(filter %.cpp,$(LITEHTML_FILES))
+GUMBO_DIR = $(LITEHTML_SRCDIR)/gumbo
+GUMBO_SRCDIR = $(GUMBO_DIR)
+GUMBO_FILES = $(wildcard $(GUMBO_SRCDIR)/*.*)
+GUMBO_CFILES = $(filter %.c,$(GUMBO_FILES))
+
+dedede:
+	echo $(GUMBO_CFILES)
+
+gumbo.o: $(GUMBO_FILES)
+	$(CC) $(CFLAGS) -I$(GUMBO_SRCDIR) $(GUMBO_CFILES) -o $@ $(ERROR_FILTER)
+
+litehtml.o: $(LITEHTML_FILES) gumbo.o
+	$(CXX) $(CXXFLAGS) $(GUMBO_CFILES) $(LITEHTML_CPPFILES) -o $@ $(ERROR_FILTER)
